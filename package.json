@@ -1,0 +1,6 @@
+{
+  "name": "spotify-playlist-creator",
+  "dependencies": {
+    "spotify-web-api-node": "^4.0.0"
+  }
+}
