@@ -1,12 +1,14 @@
 const fs = require('fs');
+const path = require('path');
 
 // https://github.com/thelinmichael/spotify-web-api-node
 const SpotifyApi = require("spotify-web-api-node");
 
 // Get from https://developer.spotify.com/dashboard/applications/
-const CLIENT_ID = "b79f2468429844849a2c558b77d5ba50";
-const CLIENT_SECRET = "";
-const AUTH_TOKEN = "";
+const CLIENT_ID = process.env.SPOTIFY_PLAYLIST_IMPORTER_CLIENT_ID;
+const CLIENT_SECRET = process.env.SPOTIFY_PLAYLIST_IMPORTER_CLIENT_SECRET;
+// Get from https://developer.spotify.com/console/post-playlists/
+const AUTH_TOKEN = process.env.SPOTIFY_PLAYLIST_IMPORTER_AUTH_TOKEN;
 
 let spotifyApi = new SpotifyApi({
     cliendId: CLIENT_ID,
@@ -16,12 +18,20 @@ let spotifyApi = new SpotifyApi({
 spotifyApi.setAccessToken(AUTH_TOKEN);
 
 // Path to the import file
-let googlePlaylist = JSON.parse(fs.readFileSync("/home/bryan/Downloads/google-play-music-thumbs-up-formatted.json"));
+if (process.argv.length != 3) {
+    console.log("Missing import file path argument");
+    process.exit(-1);
+}
+let playlistFilePath = path.resolve(process.argv[2]);
+let googlePlaylist = JSON.parse(fs.readFileSync(playlistFilePath));
 let googleTracks = googlePlaylist[1][0];
+
 // [49] is timestamp?
 googleTracks.sort((a, b) => {
     return a[49] - b[49];
 });
+
+googleTracks = googleTracks.slice(0, 10);
 
 function processOneTrack(trackName, artist, album, playlistId) {
     return new Promise((resolve, reject) => {
@@ -72,7 +82,7 @@ function importPlaylist() {
     spotifyApi.getMe().then(userResponse => {
         let userId = userResponse.body.id;
 
-        spotifyApi.createPlaylist(userId, "New Playlist", {"public": false}).then(response => {
+        spotifyApi.createPlaylist(userId, "Imported Playlist", {"public": false}).then(response => {
             let playlistId = response.body.id;
             let currentIndex = 0;
 
@@ -92,6 +102,10 @@ function importPlaylist() {
 
             next();
         });
+    }).catch(ex => {
+        console.log("Error retrieving current user");
+        console.log(ex);
+        process.exit(-1);
     });
 }
 
