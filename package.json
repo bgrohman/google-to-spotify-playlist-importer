@@ -1,6 +1,8 @@
 {
   "name": "google-to-spotify-playlist-importer",
   "description": "Import playlists from Google Play Music to Spotify",
+  "version": "1.0.0",
+  "license": "MIT",
   "dependencies": {
     "spotify-web-api-node": "^4.0.0"
   }
