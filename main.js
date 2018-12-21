@@ -31,8 +31,6 @@ googleTracks.sort((a, b) => {
     return a[49] - b[49];
 });
 
-googleTracks = googleTracks.slice(0, 10);
-
 function processOneTrack(trackName, artist, album, playlistId) {
     return new Promise((resolve, reject) => {
         try {
