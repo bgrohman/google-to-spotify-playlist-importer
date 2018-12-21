@@ -17,19 +17,23 @@ let spotifyApi = new SpotifyApi({
 
 spotifyApi.setAccessToken(AUTH_TOKEN);
 
-// Path to the import file
-if (process.argv.length != 3) {
-    console.log("Missing import file path argument");
-    process.exit(-1);
-}
-let playlistFilePath = path.resolve(process.argv[2]);
-let googlePlaylist = JSON.parse(fs.readFileSync(playlistFilePath));
-let googleTracks = googlePlaylist[1][0];
+function getGoogleTracks() {
+    // Path to the import file
+    if (process.argv.length != 3) {
+        console.log("Missing import file path argument");
+        process.exit(-1);
+    }
+    let playlistFilePath = path.resolve(process.argv[2]);
+    let googlePlaylist = JSON.parse(fs.readFileSync(playlistFilePath));
+    let googleTracks = googlePlaylist[1][0];
 
-// [49] is timestamp?
-googleTracks.sort((a, b) => {
-    return a[49] - b[49];
-});
+    // [49] is timestamp?
+    googleTracks.sort((a, b) => {
+        return a[49] - b[49];
+    });
+
+    return googleTracks;
+}
 
 function processOneTrack(trackName, artist, album, playlistId) {
     return new Promise((resolve, reject) => {
@@ -76,7 +80,7 @@ function getSanitizedSearchTerm(term) {
     return result;
 }
 
-function importPlaylist() {
+function importPlaylist(googleTracks) {
     spotifyApi.getMe().then(userResponse => {
         let userId = userResponse.body.id;
 
@@ -107,4 +111,4 @@ function importPlaylist() {
     });
 }
 
-importPlaylist();
+importPlaylist(getGoogleTracks());
